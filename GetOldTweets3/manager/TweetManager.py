@@ -22,7 +22,7 @@ class TweetManager:
     ]
 
     @staticmethod
-    def getTweets(tweetCriteria, receiveBuffer=None, bufferLength=100, proxy=None, debug=False):
+    def getTweets(tweetCriteria, receiveBuffer=None, bufferLength=100, proxy=None):
         """Get tweets that match the tweetCriteria parameter
         A static method.
 
@@ -32,7 +32,6 @@ class TweetManager:
         receiveBuffer : callable, a function that will be called upon a getting next `bufferLength' tweets
         bufferLength: int, the number of tweets to pass to `receiveBuffer' function
         proxy: str, a proxy server to use
-        debug: bool, output debug information
         """
         results = []
         resultsAux = []
@@ -62,7 +61,7 @@ class TweetManager:
 
             active = True
             while active:
-                json = TweetManager.getJsonResponse(tweetCriteria, refreshCursor, cookieJar, proxy, user_agent, debug=debug)
+                json = TweetManager.getJsonResponse(tweetCriteria, refreshCursor, cookieJar, proxy, user_agent)
                 if len(json['items_html'].strip()) == 0:
                     break
 
@@ -271,7 +270,7 @@ class TweetManager:
         return attr
 
     @staticmethod
-    def getJsonResponse(tweetCriteria, refreshCursor, cookieJar, proxy, useragent=None, debug=False):
+    def getJsonResponse(tweetCriteria, refreshCursor, cookieJar, proxy, useragent=None):
         """Invoke an HTTP query to Twitter.
         Should not be used as an API function. A static method.
         """
@@ -335,16 +334,11 @@ class TweetManager:
             opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookieJar))
         opener.addheaders = headers
 
-        if debug:
-            print(url)
-            print('\n'.join(h[0]+': '+h[1] for h in headers))
 
         try:
             response = opener.open(url)
             jsonResponse = response.read()
         except Exception as e:
-            print("An error occured during an HTTP request:", str(e))
-            print("Try to open in browser: https://twitter.com/search?q=%s&src=typd" % urllib.parse.quote(urlGetData))
             sys.exit()
 
         try:
@@ -358,9 +352,5 @@ class TweetManager:
         except:
             print("Error parsing JSON: %s" % s_json)
             sys.exit()
-
-        if debug:
-            print(s_json)
-            print("---\n")
 
         return dataJson
